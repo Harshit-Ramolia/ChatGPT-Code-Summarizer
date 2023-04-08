@@ -61,7 +61,7 @@ class Scrapper:
                 except:
                     time.sleep(1)
 
-            if (len(response.text)>100):
+            if (len(response.text)>200):
                 break
 
         return markdownify.markdownify(response.get_attribute("outerHTML"))

@@ -108,7 +108,7 @@ class Tree:
 
         response = driver.chatGPT(summary+input)
         if (not self.semi):
-            if (len(response)>=100):
+            if (len(response)>=300):
                 file_create(f"{node.root}\\readme_by_ChatGPT.md", response)
                 node.full_summary = response
                 return response
