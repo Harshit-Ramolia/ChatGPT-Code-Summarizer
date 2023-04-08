@@ -108,11 +108,11 @@ class Tree:
 
         response = driver.chatGPT(summary+input)
         if (not self.semi):
-            file_create(f"{node.root}\document.md", response)
+            file_create(f"{node.root}\\readme_by_ChatGPT.md", response)
         node.full_summary = response
         return response
 
     def fill_summaries(self, driver: Scrapper, prompt: str = "Can you please summarize the above content in markdown format also use tables wherever feels good. Please explain what the code does, what parameters it takes and what it returns. Keep it simple. Please also ensure that the response is provided in markdown format so that I can easily copy and paste it to a file or document. Thank you.") -> None:
         self.__summarize(self.root, driver, prompt)
         if (self.semi):
-            file_create(f"{self.root.root}\document.md", self.root.full_summary)
+            file_create(f"{self.root.root}\\readme_by_ChatGPT.md", self.root.full_summary)

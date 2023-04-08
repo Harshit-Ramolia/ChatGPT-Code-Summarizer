@@ -16,8 +16,15 @@ if __name__ == "__main__":
 
     driver = Scrapper()
     driver.start()
-    driver.chatGPT(
-        "Hello, can you help me summaries all the codes and file I give you?")
+    input("Please, press enter once you log in to chatgpt")
+    try:
+        driver.chatGPT(
+            "Hello, can you help me summaries all the codes and file I give you?")
+    except:
+        print("Couldn't find chatGPT. The reasons could be following:")
+        print("1. You closed the default tab opened")
+        print("2. ChatGPT is not open with login in the default tab, please follow the steps in readme")
+
 
     if (config["path"]):
         FS = Tree(startpath=config["path"], semi=config["semi"])
