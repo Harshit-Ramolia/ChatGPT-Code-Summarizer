@@ -1,7 +1,7 @@
 import argparse
 from file_tree import Tree
 from scrapper import Scrapper
-
+import time
 
 if __name__ == "__main__":
 
@@ -16,7 +16,8 @@ if __name__ == "__main__":
 
     driver = Scrapper()
     driver.start()
-    input("Please, press enter once you log in to chatgpt")
+    time.sleep(1)
+    __temp = input("Please, press enter once you log into chatgpt in default tab\n\n")
     try:
         driver.chatGPT(
             "Hello, can you help me summaries all the codes and file I give you?")
@@ -24,7 +25,9 @@ if __name__ == "__main__":
         print("Couldn't find chatGPT. The reasons could be following:")
         print("1. You closed the default tab opened")
         print("2. ChatGPT is not open with login in the default tab, please follow the steps in readme")
+        exit(0)
 
+    print("Please wait, it may take a while.")
 
     if (config["path"]):
         FS = Tree(startpath=config["path"], semi=config["semi"])

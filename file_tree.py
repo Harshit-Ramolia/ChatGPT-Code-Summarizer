@@ -87,7 +87,7 @@ class Tree:
     def __summarize(self, node: Node, driver: Scrapper, prompt: str) -> None:
         children_summaries = []
         for name in node.childrens:
-            response = self.__summarize(node.childrens[name], driver)
+            response = self.__summarize(node.childrens[name], driver, prompt)
             response = f"The following is the documentaion and summary for directory {name}\n\n {response} \n\n"
             children_summaries += [response]
             print(f"completed dir = {node.root}\\{name}")
@@ -108,9 +108,15 @@ class Tree:
 
         response = driver.chatGPT(summary+input)
         if (not self.semi):
-            file_create(f"{node.root}\\readme_by_ChatGPT.md", response)
-        node.full_summary = response
-        return response
+            if (len(response)>=100):
+                file_create(f"{node.root}\\readme_by_ChatGPT.md", response)
+                node.full_summary = response
+                return response
+            else:
+                file_create(f"{node.root}\\readme_by_ChatGPT.md", summary)
+                node.full_summary = summary
+                return summary
+
 
     def fill_summaries(self, driver: Scrapper, prompt: str = "Can you please summarize the above content in markdown format also use tables wherever feels good. Please explain what the code does, what parameters it takes and what it returns. Keep it simple. Please also ensure that the response is provided in markdown format so that I can easily copy and paste it to a file or document. Thank you.") -> None:
         self.__summarize(self.root, driver, prompt)
