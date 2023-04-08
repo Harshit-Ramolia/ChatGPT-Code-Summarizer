@@ -2,8 +2,10 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from dataclasses import dataclass
+import markdownify
 import time
 import random
+import pyperclip
 
 
 @dataclass
@@ -28,28 +30,38 @@ class Scrapper:
         self.isRunning = True
         self.driver = driver
 
-    def chatGPT(self, input):
-        driver = self.driver
-        textBox = driver.find_element(
-            by=By.XPATH, value="/html/body/div[1]/div[2]/div[2]/main/div[2]/form/div/div[2]/textarea")
-        textBox.send_keys(input)
-
+    def __fill_textbox(self, textBox, input):
+        pyperclip.copy(input)
+        textBox.click()
         x = random.random()
-        time.sleep(x*1.5)
-
+        time.sleep(x)
+        textBox.send_keys(Keys.CONTROL+"v")
+        x = random.random()
+        time.sleep(x)
         textBox.send_keys(Keys.ENTER)
-        old = -1
-        while True:
-            try:
-                response = driver.find_element(
-                    by=By.XPATH, value=f"/html/body/div[1]/div[2]/div[2]/main/div[1]/div/div/div/div[{self.counter}]/div/div[2]/div[1]/div/div")
-                if len(response.text) > old:
-                    old = len(response.text)
-                    time.sleep(5)
-                else:
-                    self.counter += 2
-                    break
-            except:
-                time.sleep(1)
 
-        return response.text
+    def chatGPT(self, input):
+        
+        for _ in range(2):
+            driver = self.driver
+            textBox = driver.find_element(
+                by=By.XPATH, value="/html/body/div[1]/div[2]/div[2]/main/div[2]/form/div/div[2]/textarea")
+            self.__fill_textbox(textBox, input)
+            old = -1
+            while True:
+                try:
+                    response = driver.find_element(
+                        by=By.XPATH, value=f"/html/body/div[1]/div[2]/div[2]/main/div[1]/div/div/div/div[{self.counter}]/div/div[2]/div[1]/div/div")
+                    if len(response.text) > old:
+                        old = len(response.text)
+                        time.sleep(5)
+                    else:
+                        self.counter += 2
+                        break
+                except:
+                    time.sleep(1)
+
+            if (len(response.text)>100):
+                break
+
+        return markdownify.markdownify(response.get_attribute("outerHTML"))
