@@ -14,7 +14,7 @@ class Scrapper:
     isRunning: bool = False
     counter: int = 2
 
-    def start(self):
+    def start(self) -> None:
         options = webdriver.ChromeOptions()
         options.add_argument("--disable-blink-features=AutomationControlled")
         options.add_experimental_option(
@@ -30,7 +30,7 @@ class Scrapper:
         self.isRunning = True
         self.driver = driver
 
-    def __fill_textbox(self, textBox, input):
+    def __fill_textbox(self, textBox, input: str) -> None:
         pyperclip.copy(input)
         textBox.click()
         x = random.random()
@@ -40,8 +40,8 @@ class Scrapper:
         time.sleep(x)
         textBox.send_keys(Keys.ENTER)
 
-    def chatGPT(self, input):
-        
+    def chatGPT(self, input: str, repeat: bool = True) -> str:
+
         for _ in range(2):
             driver = self.driver
             textBox = driver.find_element(
@@ -61,7 +61,10 @@ class Scrapper:
                 except:
                     time.sleep(1)
 
-            if (len(response.text)>200):
+            if (len(response.text) > 200):
+                break
+
+            if (not repeat):
                 break
 
         return markdownify.markdownify(response.get_attribute("outerHTML"))

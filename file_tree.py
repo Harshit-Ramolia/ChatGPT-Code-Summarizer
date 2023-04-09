@@ -3,6 +3,8 @@ from extension_list import isExtension
 from scrapper import Scrapper
 from typing import List
 from utility import *
+from tqdm import tqdm
+from pathlib import Path
 
 
 @dataclass
@@ -18,13 +20,16 @@ class Node:
 
 @dataclass
 class Tree:
-    startpath: str = ".\code"
+    startpath: str = str(Path(".\\code"))
     root: Node = field(default=None, init=None)
     semi: bool = False
 
     def __make_node(self, root: str, name: str, dirs: List[str], files: List[str]) -> Node:
+        dirs = list(filter(lambda x: x[0] != ".", dirs))        
+        files = list(filter(lambda x: not is_gitignored(
+            Path.joinpath(Path(root), x), Path.joinpath(Path(self.startpath), ".gitignore")), files))
         files = list(filter(lambda x: isExtension(x.split(".")[1]), files))
-        files = list(filter(lambda x: not is_gitignored(root+"\\"+x), files))
+        
         new_node = Node(name=name, root=root, files=files)
         for folders in dirs:
             new_node.childrens[folders] = None
@@ -58,17 +63,20 @@ class Tree:
         return node
 
     def __add(self, root: str, dirs: List[str], files: List[str]) -> None:
+        root_path = Path(root)
         current_node = self.root
-        path = root[1:].split('\\')[1:]
+        path = list(root_path.parts)
         if (current_node == None):
             new_node = self.__make_node(
-                root=root, name=path[0], dirs=dirs, files=files)
+                root=str(root_path), name=self.startpath, dirs=dirs, files=files)
             self.root = new_node
             return
-        for name in path[1:]:
+        for name in path[len(list(Path(self.startpath).parts)):]:
+            if (name not in current_node.childrens):
+                return
             if (current_node.childrens[name] == None):
                 new_node = self.__make_node(
-                    root=root, name=name, dirs=dirs, files=files)
+                    root=str(root_path), name=name, dirs=dirs, files=files)
                 current_node.childrens[name] = new_node
                 return
             current_node = current_node.childrens[name]
@@ -84,10 +92,22 @@ class Tree:
         self.__fill_no_files(self.root)
         self.root = self.__remove_no_files(self.root)
 
-    def __summarize(self, node: Node, driver: Scrapper, prompt: str) -> None:
+    def __total(self, node: Node) -> int:
+        count = 0
+        for name in node.childrens:
+            count += self.__total(node.childrens[name])
+
+        count += len(node.files)
+
+        count += 1
+
+        return count
+
+    def __summarize(self, node: Node, driver: Scrapper, prompt: str, pbar: tqdm) -> None:
         children_summaries = []
         for name in node.childrens:
-            response = self.__summarize(node.childrens[name], driver, prompt)
+            response = self.__summarize(
+                node.childrens[name], driver, prompt, pbar)
             response = f"The following is the documentaion and summary for directory {name}\n\n {response} \n\n"
             children_summaries += [response]
             print(f"completed dir = {node.root}\\{name}")
@@ -97,6 +117,7 @@ class Tree:
             input = file_content(node.root+"\\"+file)
             input += f"\n\n{prompt}\n\n"
             response = driver.chatGPT(input)
+            pbar.update(1)
             response = f"The following is the documentaion and summary for file {file}\n\n {response} \n\n"
             files_summary += [response]
             print(f"completed file = {node.root}\\{file}")
@@ -107,8 +128,9 @@ class Tree:
         summary = "\n".join(children_summaries+files_summary)
 
         response = driver.chatGPT(summary+input)
+        pbar.update(1)
         if (not self.semi):
-            if (len(response)>=300):
+            if (len(response) >= 300):
                 file_create(f"{node.root}\\readme_by_ChatGPT.md", response)
                 node.full_summary = response
                 return response
@@ -117,8 +139,11 @@ class Tree:
                 node.full_summary = summary
                 return summary
 
-
     def fill_summaries(self, driver: Scrapper, prompt: str = "Can you please summarize the above content in markdown format also use tables wherever feels good. Please explain what the code does, what parameters it takes and what it returns. Keep it simple. Please also ensure that the response is provided in markdown format so that I can easily copy and paste it to a file or document. Thank you.") -> None:
-        self.__summarize(self.root, driver, prompt)
-        if (self.semi):
-            file_create(f"{self.root.root}\\readme_by_ChatGPT.md", self.root.full_summary)
+        total = self.__total(self.root)
+        print(total)
+        # pbar = tqdm(total=total)
+        # self.__summarize(self.root, driver, prompt, pbar)
+        # if (self.semi):
+        #     file_create(f"{self.root.root}\\readme_by_ChatGPT.md",
+        #                 self.root.full_summary)
