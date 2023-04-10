@@ -7,7 +7,7 @@ A tool that uses ChatGPT and summary of summary algorithms to automatically gene
 - dataclasses
 - selenium
 - markdownify
-- pyperclip
+- pyperclip (in case of linux, please also install xclip)
 - gitignore_parser
 
 PS: Add the file extensions you are using in the file extension_list.py
