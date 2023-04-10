@@ -8,6 +8,8 @@
 
 PS: Add the file extensions you are using in the file extension_list.py
 
+And add the file or directory in .gitignore in the root directory to remove the file for which you don't need summary
+
 ### Browser
 
 Chrome browser is needed to run this
