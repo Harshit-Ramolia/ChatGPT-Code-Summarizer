@@ -25,11 +25,12 @@ class Tree:
     semi: bool = False
 
     def __make_node(self, root: str, name: str, dirs: List[str], files: List[str]) -> Node:
-        dirs = list(filter(lambda x: x[0] != ".", dirs))        
+        dirs = list(filter(lambda x: x[0] != ".", dirs))
+        files = list(
+            filter(lambda x:  "." in x and isExtension(x.split(".")[1]), files))
         files = list(filter(lambda x: not is_gitignored(
             Path.joinpath(Path(root), x), Path.joinpath(Path(self.startpath), ".gitignore")), files))
-        files = list(filter(lambda x: isExtension(x.split(".")[1]), files))
-        
+
         new_node = Node(name=name, root=root, files=files)
         for folders in dirs:
             new_node.childrens[folders] = None
@@ -116,6 +117,9 @@ class Tree:
         for file in node.files:
             input = file_content(node.root+"\\"+file)
             input += f"\n\n{prompt}\n\n"
+            if len(input) >= 3500:
+                pbar.update(1)
+                continue
             response = driver.chatGPT(input)
             pbar.update(1)
             response = f"The following is the documentaion and summary for file {file}\n\n {response} \n\n"
@@ -126,6 +130,21 @@ class Tree:
 
         input = f"\n\n{prompt}\n\n"
         summary = "\n".join(children_summaries+files_summary)
+        if (len(summary) >= 3500):
+            summary = ""
+            for sum in children_summaries:
+                if (len(summary+sum) <= 3300):
+                    summary = summary + "\n" + sum
+                else:
+                    summary = driver.chatGPT(summary+input)
+                    summary = summary + "\n" + sum
+
+            for sum in files_summary:
+                if (len(summary+sum) <= 3300):
+                    summary = summary + "\n" + sum
+                else:
+                    summary = driver.chatGPT(summary+input)
+                    summary = summary + "\n" + sum
 
         response = driver.chatGPT(summary+input)
         pbar.update(1)
@@ -141,9 +160,8 @@ class Tree:
 
     def fill_summaries(self, driver: Scrapper, prompt: str = "Can you please summarize the above content in markdown format also use tables wherever feels good. Please explain what the code does, what parameters it takes and what it returns. Keep it simple. Please also ensure that the response is provided in markdown format so that I can easily copy and paste it to a file or document. Thank you.") -> None:
         total = self.__total(self.root)
-        print(total)
-        # pbar = tqdm(total=total)
-        # self.__summarize(self.root, driver, prompt, pbar)
-        # if (self.semi):
-        #     file_create(f"{self.root.root}\\readme_by_ChatGPT.md",
-        #                 self.root.full_summary)
+        pbar = tqdm(total=total)
+        self.__summarize(self.root, driver, prompt, pbar)
+        if (self.semi):
+            file_create(f"{self.root.root}\\readme_by_ChatGPT.md",
+                        self.root.full_summary)

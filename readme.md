@@ -6,6 +6,8 @@
 - pyperclip
 - gitignore_parser
 
+PS: Add the file extensions you are using in the file extension_list.py
+
 ### Browser
 
 Chrome browser is needed to run this

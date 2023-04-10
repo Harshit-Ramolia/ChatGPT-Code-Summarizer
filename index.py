@@ -24,25 +24,28 @@ if __name__ == "__main__":
     FS.sanitize()
 
     driver = Scrapper()
-    # driver.start()
-    # time.sleep(1)
-    # __temp = input(
-    #     "Please, press enter once you log into chatgpt in default tab\n\n")
+    driver.start()
+    time.sleep(1)
+    __temp = input(
+        "Please, press enter once you log into chatgpt in default tab\n\n")
     
-    # print("Please wait, it may take a while.")
+    print("Please wait, it may take a while.")
     
-    # try:
-    #     driver.chatGPT(
-    #         "Hello, can you help me summaries all the codes and file I give you?", repeat=False)
-    # except Exception as e:
-    #     print(e)
-    #     print("If error due selenium. The reasons could be following:")
-    #     print("1. You closed the default tab opened")
-    #     print("2. ChatGPT is not open with login in the default tab, please follow the steps in readme")
-    #     exit(0)
+    try:
+        driver.chatGPT(
+            "Hello, can you help me summaries all the codes and file I give you?", repeat=False)
+    except Exception as e:
+        print(e)
+        print("If error due selenium. The reasons could be following:")
+        print("1. You closed the default tab opened")
+        print("2. ChatGPT is not open with login in the default tab, please follow the steps in readme")
+        exit(0)
 
-
-    if (config["prompt"]):
-        FS.fill_summaries(driver=driver, prompt=config["prompt"])
-    else:
-        FS.fill_summaries(driver=driver)
+    try:
+        if (config["prompt"]):
+            FS.fill_summaries(driver=driver, prompt=config["prompt"])
+        else:
+            FS.fill_summaries(driver=driver)
+    except Exception as e:
+        print(e)
+        print("Some error occured, press enter to exit!")
