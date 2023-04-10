@@ -22,7 +22,7 @@ if __name__ == "__main__":
 
     FS.fill()
     FS.sanitize()
-
+    
     driver = Scrapper()
     driver.start()
     time.sleep(1)
@@ -49,3 +49,4 @@ if __name__ == "__main__":
     except Exception as e:
         print(e)
         print("Some error occured, press enter to exit!")
+        input()

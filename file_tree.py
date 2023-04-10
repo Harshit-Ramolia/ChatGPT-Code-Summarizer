@@ -11,7 +11,7 @@ from pathlib import Path
 class Node:
     name: str = None
     root: str = None
-    childrens: dict[str, "Node"] = field(default_factory=dict)
+    childrens: dict = field(default_factory=dict)
     files: List[str] = field(default_factory=list)
     no_files: bool = True
     full_summary: str = ""
@@ -115,9 +115,9 @@ class Tree:
 
         files_summary = []
         for file in node.files:
-            input = file_content(node.root+"\\"+file)
+            input = file_content(str(Path.joinpath(Path(node.root), file)))
             input += f"\n\n{prompt}\n\n"
-            if len(input) >= 3500:
+            if len(input.split()) >= 1500:
                 pbar.update(1)
                 continue
             response = driver.chatGPT(input)
@@ -130,17 +130,19 @@ class Tree:
 
         input = f"\n\n{prompt}\n\n"
         summary = "\n".join(children_summaries+files_summary)
-        if (len(summary) >= 3500):
+        print(node.root, len(summary.split()))
+        if (len(summary.split()) >= 1200):
+            print("Yah inside this!")
             summary = ""
             for sum in children_summaries:
-                if (len(summary+sum) <= 3300):
+                if (len(str(summary+sum).split()) <= 1200):
                     summary = summary + "\n" + sum
                 else:
                     summary = driver.chatGPT(summary+input)
                     summary = summary + "\n" + sum
 
             for sum in files_summary:
-                if (len(summary+sum) <= 3300):
+                if (len(str(summary+sum).split()) <= 1200):
                     summary = summary + "\n" + sum
                 else:
                     summary = driver.chatGPT(summary+input)
